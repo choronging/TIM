@@ -1,0 +1,294 @@
+<boardwriteform>
+
+package com.saeyan.controller.action;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class BoardWriteFormAction implements Action {
+
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String url="/board/boardWrite.jsp";
+		
+		RequestDispatcher dispatcher=request.getRequestDispatcher(url);
+		dispatcher.forward(request, response);
+	}
+
+}
+
+<boardwrite>
+
+package com.saeyan.controller.action;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.saeyan.dao.BoardDAO;
+import com.saeyan.dto.BoardVO;
+
+public class BoardWriteAction implements Action {
+
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		BoardVO bVo=new BoardVO();
+		bVo.setName(request.getParameter("name"));
+		bVo.setPass(request.getParameter("pass"));
+		bVo.setEmail(request.getParameter("email"));
+		bVo.setTitle(request.getParameter("title"));
+		bVo.setContent(request.getParameter("content"));
+		
+		BoardDAO bDao=BoardDAO.getInstance();
+		bDao.insertBoard(bVo);
+		
+		new BoardListAction().execute(request, response);
+	}
+
+}
+
+<boardupdate>
+package com.saeyan.controller.action;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.saeyan.dao.BoardDAO;
+import com.saeyan.dto.BoardVO;
+
+public class BoardUpdateAction implements Action {
+
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		BoardVO bVo=new BoardVO();
+		bVo.setNum(Integer.parseInt(request.getParameter("num")));
+		bVo.setName(request.getParameter("name"));
+		bVo.setPass(request.getParameter("pass"));
+		bVo.setEmail(request.getParameter("email"));
+		bVo.setTitle(request.getParameter("title"));
+		bVo.setContent(request.getParameter("content"));
+		
+		BoardDAO bDao=BoardDAO.getInstance();
+		bDao.updateBoard(bVo);
+		
+		new BoardListAction().execute(request, response);
+	}
+
+}
+
+<boardupdateform>
+
+package com.saeyan.controller.action;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.saeyan.dao.BoardDAO;
+import com.saeyan.dto.BoardVO;
+
+public class BoardUpdateFormAction implements Action {
+
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String url="/board/boardUpdate.jsp";
+		String num=request.getParameter("num");
+		BoardDAO bDao=BoardDAO.getInstance();
+		bDao.updateReadCount(num);
+		BoardVO bVo=bDao.selectOneBoardByNum(num);
+		request.setAttribute("board", bVo);
+		RequestDispatcher dispatcher=
+				request.getRequestDispatcher(url);
+		dispatcher.forward(request, response);
+	}
+
+}
+
+
+<boarddelete>
+
+package com.saeyan.controller.action;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.saeyan.dao.BoardDAO;
+
+public class BoardDeleteAction implements Action {
+
+	@Override
+	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String num=request.getParameter("num");
+		BoardDAO bDao=BoardDAO.getInstance();
+		bDao.deleteBoard(num);
+		
+		new BoardListAction().execute(request, response);
+	}
+
+}
+
+
+<boardWrite.jsp>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> 게시판 </title>
+<link rel="stylesheet" type="text/css" href="css/shopping.css">
+<script type="text/javascript" src="script/board.js"></script>
+</head>
+<body>
+<div id="wrap" align="center">
+<h1> 게시글 등록 </h1>
+  <form name="frm" method="post" action="BoardServlet">
+  <input type="hidden" name="command" value="board_write">
+  <table>
+    <tr>
+      <th>작성자</th>
+      <td><input type="text" name="name"> * 필수 </td>
+    </tr>
+    <tr>
+      <th>비밀번호</th>
+      <td><input type="password" name="pass"> * 필수 (게시물 수정 삭제시 필요합니다.)</td>
+    </tr>
+    <tr>
+      <th>이메일</th>
+      <td><input type="text" name="email"></td>
+    </tr>
+    <tr>
+      <th>제목</th>
+      <td><input type="text" size="70" name="title"> * 필수 </td>
+    </tr>
+    <tr>
+      <th>내용</th>
+      <td><textarea cols="70" rows="15" name="content"></textarea></td>
+    </tr>
+  </table>
+  <br><br>
+  <input type="submit" value="등록" onclick="return boardCheck()">
+  <input type="reset" value="다시 작성">
+  <input type="button" value="목록" onclick="location.href='BoardServlet?command=board_list'">
+  </form>
+</div>
+</body>
+</html>
+
+<boardupdate.jsp>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> 게시판 </title>
+<link rel="stylesheet" type="text/css" href="css/shopping.css">
+<script type="text/javascript" src="script/board.js"></script>
+</head>
+<body>
+<div id="wrap" align="center">
+<h1> 게시글 수정 </h1>
+<form name="frm" method="post" action="BoardServlet">
+  <input type="hidden" name="command" value="board_update">
+  <input type="hidden" name="num" value="${board.num}">
+  <table>
+    <tr>
+      <th>작성자</th>
+      <td><input type="text" size="12" name="name"
+      value="${board.name}"> * 필수 </td>
+    </tr>
+    <tr>
+      <th>비밀번호</th>
+      <td><input type="password" size="12" name="pass"> * 필수 (게시글 수정 삭제시 필요합니다.)</td>
+    </tr>
+    <tr>
+      <th>이메일</th>
+      <td><input type="text" size="12" name="email"
+      value="${board.email}"></td>
+    </tr>
+    <tr>
+      <th>제목</th>
+      <td><input type="text" size="70" name="title"
+      value="${board.title}"></td>
+    </tr>
+    <tr>
+      <th>내용</th>
+      <td><textarea cols="70" rows="15" name="content">${board.content}</textarea></td>
+    </tr>
+  </table>
+  <br><br>
+  <input type="submit" value="등록" onclick="return boardCheck()">
+  <input type="reset" value="다시 작성">
+  <input type="button" value="목록" onclick="location.href='BoardServlet?command=board_list'">
+</form>
+</div>
+</body>
+</html>
+
+
+<boardview>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> 게시판 </title>
+<link rel="stylesheet" type="text/css" href="css/shopping.css">
+<script type="text/javascript" src="script/board.js"></script>
+</head>
+<body>
+<div id="wrap" align="center">
+<h1> 게시글 상세보기 </h1>
+  <table>
+    <tr>
+      <th> 작성자 </th> <td>${board.name}</td>
+      <th> 이메일 </th> <td>${board.email}</td>
+    </tr>
+    <tr>
+     <th> 작성일 </th> <td><fmt:formatDate value="${board.writedate}"/></td>
+     <th> 조회수 </th> <td>${board.readcount}</td>
+    </tr>
+    <tr>
+      <th> 제목 </th>
+      <td colspan="3">${board.title}</td>
+    </tr>
+    <tr>
+      <th> 내용 </th>
+      <td colspan="3"><pre>${board.content}</pre></td>
+    </tr>
+  </table>
+  <br> <br>
+  <input type="button" value="게시글 수정" onclick=
+  "open_win('BoardServlet?command=board_check_pass_form&num=${board.num}',
+  'update')">
+  <input type="button" value="게시글 삭제" onclick=
+  "open_win('BoardServlet?command=board_check_pass_form&num=${board.num}',
+  'delete')">
+  <input type="button" value="게시글 리스트" onclick=
+  "location.href='BoardServlet?command=board_list'">
+  <input type="button" value="게시글 등록" onclick=
+  "location.href='BoardServlet?command=board_write_form'">
+</div>
+</body>
+</html>
